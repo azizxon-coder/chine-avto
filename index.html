@@ -39,6 +39,7 @@ body{
   overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
 }
+body.locked{overflow:hidden}
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
@@ -133,8 +134,22 @@ ul{list-style:none}
 .header-cta{display:flex;align-items:center;gap:16px}
 .header-phone{font-size:.9rem;font-weight:600;color:var(--text-muted);transition:var(--transition)}
 .header-phone:hover{color:var(--accent)}
-.mobile-toggle{display:none;flex-direction:column;gap:5px;padding:8px}
-.mobile-toggle span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:var(--transition)}
+.mobile-toggle{
+  display:none;flex-direction:column;justify-content:center;gap:5px;
+  padding:10px;width:44px;height:44px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border);
+  transition:var(--transition);
+}
+.mobile-toggle:hover{background:var(--border)}
+.mobile-toggle span{
+  width:22px;height:2px;background:var(--text);border-radius:2px;
+  transition:var(--transition);transform-origin:center;
+}
+
+/* Hamburger animatsiyasi */
+.mobile-toggle.active span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.mobile-toggle.active span:nth-child(2){opacity:0;transform:scaleX(0)}
+.mobile-toggle.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
 /* ═══════════════════════════════════════
    HERO
@@ -145,6 +160,7 @@ ul{list-style:none}
 }
 .hero-bg{
   position:absolute;inset:0;z-index:0;
+  background:var(--surface);
 }
 .hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.35;filter:brightness(.7)}
 .hero-bg::after{
@@ -478,7 +494,7 @@ ul{list-style:none}
 }
 .modal-overlay.active{opacity:1;pointer-events:all}
 .modal{
-  width:100%;max-width:500px;
+  width:100%;max-width:500px;max-height:90vh;overflow-y:auto;
   padding:48px 40px;border-radius:var(--radius);
   background:var(--bg-card);border:1px solid var(--border);
   transform:translateY(30px) scale(.96);transition:var(--transition);
@@ -499,16 +515,19 @@ ul{list-style:none}
 .modal .btn{width:100%;margin-top:8px}
 
 /* ═══════════════════════════════════════
-   MOBILE MENU
+   MOBILE MENU (TUZATILGAN)
    ═══════════════════════════════════════ */
 .mobile-menu{
-  position:fixed;inset:0;z-index:999;
-  background:rgba(9,9,11,.97);backdrop-filter:blur(24px);
+  position:fixed;inset:0;z-index:1001;
+  background:rgba(9,9,11,.98);backdrop-filter:blur(24px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;
   opacity:0;pointer-events:none;transition:var(--transition);
 }
 .mobile-menu.active{opacity:1;pointer-events:all}
-.mobile-menu a{font-size:1.5rem;font-weight:600;color:var(--text-muted);transition:var(--transition)}
+.mobile-menu a{
+  font-size:1.5rem;font-weight:600;color:var(--text-muted);
+  transition:var(--transition);padding:8px 16px;
+}
 .mobile-menu a:hover{color:var(--accent)}
 .mobile-close{
   position:absolute;top:24px;right:24px;
@@ -516,7 +535,9 @@ ul{list-style:none}
   background:var(--surface);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
   font-size:1.3rem;color:var(--text);
+  transition:var(--transition);
 }
+.mobile-close:hover{background:var(--border);color:var(--accent)}
 
 /* ═══════════════════════════════════════
    RESPONSIVE
@@ -530,7 +551,7 @@ ul{list-style:none}
 }
 @media(max-width:768px){
   .section{padding:80px 0}
-  .nav,.header-phone{display:none}
+  .nav,.header-cta{display:none}
   .mobile-toggle{display:flex}
   .hero-title{font-size:2.4rem}
   .hero-stats{gap:32px}
@@ -541,6 +562,15 @@ ul{list-style:none}
   .trust-bar .container{gap:24px}
   .calc-form{padding:28px}
   .modal{padding:36px 24px}
+  .hero-actions{flex-direction:column;align-items:stretch}
+  .hero-actions .btn{width:100%}
+}
+@media(max-width:480px){
+  .container{padding:0 16px}
+  .section{padding:60px 0}
+  .hero-stats{flex-direction:column;gap:20px}
+  .trust-bar .container{flex-direction:column;gap:16px}
+  .calc-result-price{font-size:2.5rem}
 }
 </style>
 </head>
@@ -564,7 +594,7 @@ ul{list-style:none}
       <a href="tel:+78001234567" class="header-phone">8 800 123-45-67</a>
       <button class="btn btn-primary btn-sm" onclick="openModal()">Оставить заявку</button>
     </div>
-    <button class="mobile-toggle" onclick="toggleMobile()">
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleMobile()" aria-label="Открыть меню">
       <span></span><span></span><span></span>
     </button>
   </div>
@@ -572,12 +602,13 @@ ul{list-style:none}
 
 <!-- Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" onclick="toggleMobile()">✕</button>
+  <button class="mobile-close" onclick="toggleMobile()" aria-label="Закрыть меню">✕</button>
   <a href="#advantages" onclick="toggleMobile()">Преимущества</a>
   <a href="#catalog" onclick="toggleMobile()">Каталог</a>
   <a href="#steps" onclick="toggleMobile()">Как мы работаем</a>
   <a href="#calculator" onclick="toggleMobile()">Калькулятор</a>
   <a href="#reviews" onclick="toggleMobile()">Отзывы</a>
+  <a href="tel:+78001234567" style="color:var(--accent);font-size:1.1rem">8 800 123-45-67</a>
   <button class="btn btn-primary" onclick="toggleMobile();openModal()">Оставить заявку</button>
 </div>
 
@@ -693,15 +724,15 @@ ul{list-style:none}
         <p class="section-subtitle">Актуальные предложения с учётом доставки и растаможки</p>
       </div>
       <div class="catalog-filters">
-        <button class="filter-btn active">Все</button>
-        <button class="filter-btn">Седаны</button>
-        <button class="filter-btn">Кроссоверы</button>
-        <button class="filter-btn">Электро</button>
+        <button class="filter-btn active" data-filter="all">Все</button>
+        <button class="filter-btn" data-filter="sedan">Седаны</button>
+        <button class="filter-btn" data-filter="suv">Кроссоверы</button>
+        <button class="filter-btn" data-filter="ev">Электро</button>
       </div>
     </div>
-    <div class="catalog-grid">
+    <div class="catalog-grid" id="catalogGrid">
       <!-- Car 1 -->
-      <div class="car-card reveal reveal-delay-1">
+      <div class="car-card reveal reveal-delay-1" data-category="ev sedan">
         <div class="car-img">
           <img src="https://images.unsplash.com/photo-1693211202973-1910a9a9503e?w=800&q=80" alt="Zeekr 001">
           <span class="car-badge hot">Хит</span>
@@ -725,7 +756,7 @@ ul{list-style:none}
         </div>
       </div>
       <!-- Car 2 -->
-      <div class="car-card reveal reveal-delay-2">
+      <div class="car-card reveal reveal-delay-2" data-category="suv">
         <div class="car-img">
           <img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80" alt="Li Auto L7">
           <span class="car-badge new">Новинка</span>
@@ -749,7 +780,7 @@ ul{list-style:none}
         </div>
       </div>
       <!-- Car 3 -->
-      <div class="car-card reveal reveal-delay-3">
+      <div class="car-card reveal reveal-delay-3" data-category="ev sedan">
         <div class="car-img">
           <img src="https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=800&q=80" alt="BYD Seal">
           <span class="car-badge sale">-25%</span>
@@ -773,7 +804,7 @@ ul{list-style:none}
         </div>
       </div>
       <!-- Car 4 -->
-      <div class="car-card reveal reveal-delay-1">
+      <div class="car-card reveal reveal-delay-1" data-category="suv">
         <div class="car-img">
           <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80" alt="Geely Monjaro">
         </div>
@@ -795,7 +826,7 @@ ul{list-style:none}
         </div>
       </div>
       <!-- Car 5 -->
-      <div class="car-card reveal reveal-delay-2">
+      <div class="car-card reveal reveal-delay-2" data-category="suv">
         <div class="car-img">
           <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80" alt="Chery Tiggo 9">
           <span class="car-badge hot">Хит</span>
@@ -819,7 +850,7 @@ ul{list-style:none}
         </div>
       </div>
       <!-- Car 6 -->
-      <div class="car-card reveal reveal-delay-3">
+      <div class="car-card reveal reveal-delay-3" data-category="ev sedan">
         <div class="car-img">
           <img src="https://images.unsplash.com/photo-1580274455191-1c62238ce452?w=800&q=80" alt="Xiaomi SU7">
           <span class="car-badge new">Новинка</span>
@@ -1076,32 +1107,34 @@ ul{list-style:none}
 
 <!-- ═══════════ MODAL ═══════════ -->
 <div class="modal-overlay" id="modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button>
     <h3 class="modal-title">Оставить заявку</h3>
     <p class="modal-subtitle">Заполните форму, и мы перезвоним вам в течение 15 минут</p>
-    <div class="form-group">
-      <label class="form-label">Ваше имя</label>
-      <input type="text" class="form-input" placeholder="Как к вам обращаться?">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Телефон</label>
-      <input type="tel" class="form-input" placeholder="+7 (___) ___-__-__">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Какой автомобиль интересует?</label>
-      <select class="form-select">
-        <option>Ещё не определился</option>
-        <option>Zeekr 001</option>
-        <option>Li Auto L7 / L8 / L9</option>
-        <option>BYD Seal / Han / Tang</option>
-        <option>Geely Monjaro / Tugella</option>
-        <option>Chery Tiggo / Exeed</option>
-        <option>Xiaomi SU7</option>
-        <option>Другая модель</option>
-      </select>
-    </div>
-    <button class="btn btn-primary" onclick="submitForm()">Отправить заявку</button>
+    <form id="modalForm" onsubmit="submitForm(event)">
+      <div class="form-group">
+        <label class="form-label">Ваше имя</label>
+        <input type="text" class="form-input" name="name" placeholder="Как к вам обращаться?" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Телефон</label>
+        <input type="tel" class="form-input" name="phone" placeholder="+7 (___) ___-__-__" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Какой автомобиль интересует?</label>
+        <select class="form-select" name="car">
+          <option>Ещё не определился</option>
+          <option>Zeekr 001</option>
+          <option>Li Auto L7 / L8 / L9</option>
+          <option>BYD Seal / Han / Tang</option>
+          <option>Geely Monjaro / Tugella</option>
+          <option>Chery Tiggo / Exeed</option>
+          <option>Xiaomi SU7</option>
+          <option>Другая модель</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Отправить заявку</button>
+    </form>
     <p style="font-size:.75rem;color:var(--text-dim);text-align:center;margin-top:16px">
       Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
     </p>
@@ -1114,7 +1147,7 @@ ul{list-style:none}
 const header = document.getElementById('header');
 window.addEventListener('scroll', () => {
   header.classList.toggle('scrolled', window.scrollY > 60);
-});
+}, { passive: true });
 
 // ── Reveal on scroll ──
 const reveals = document.querySelectorAll('.reveal');
@@ -1122,45 +1155,86 @@ const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
     }
   });
 }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 reveals.forEach(el => revealObserver.observe(el));
 
-// ── Mobile menu ──
+// ── Mobile menu (TO'LIQ TUZATILGAN) ──
 function toggleMobile() {
-  document.getElementById('mobileMenu').classList.toggle('active');
+  const menu = document.getElementById('mobileMenu');
+  const toggle = document.getElementById('mobileToggle');
+  const isActive = menu.classList.toggle('active');
+  
+  // Hamburger animatsiyasi
+  toggle.classList.toggle('active', isActive);
+  
+  // Scroll bloklash
+  document.body.classList.toggle('locked', isActive);
 }
+
+// Mobil menyu tashqarisiga bosilganda yopish
+document.getElementById('mobileMenu').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) toggleMobile();
+});
 
 // ── Modal ──
 function openModal() {
-  document.getElementById('modal').classList.add('active');
-  document.body.style.overflow = 'hidden';
+  const modal = document.getElementById('modal');
+  modal.classList.add('active');
+  document.body.classList.add('locked');
+  
+  // Input ga auto-focus
+  setTimeout(() => {
+    const firstInput = modal.querySelector('input');
+    if (firstInput) firstInput.focus();
+  }, 300);
 }
+
 function closeModal() {
-  document.getElementById('modal').classList.remove('active');
-  document.body.style.overflow = '';
+  const modal = document.getElementById('modal');
+  modal.classList.remove('active');
+  
+  // Faqat mobil menyu ochiq bo'lmasa scrollni qaytarish
+  if (!document.getElementById('mobileMenu').classList.contains('active')) {
+    document.body.classList.remove('locked');
+  }
 }
+
+// Modal tashqarisiga bosilganda yopish
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeModal();
 });
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeModal();
-});
 
-function submitForm() {
-  const modal = document.querySelector('.modal');
-  modal.innerHTML = `
+// Formani yuborish
+function submitForm(e) {
+  e.preventDefault();
+  const modalContent = document.getElementById('modalContent');
+  
+  modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button>
     <div style="text-align:center;padding:40px 0">
       <div style="font-size:3rem;margin-bottom:20px">✅</div>
       <h3 class="modal-title" style="margin-bottom:12px">Заявка отправлена!</h3>
       <p style="color:var(--text-muted);font-size:.95rem;margin-bottom:32px">
         Наш менеджер свяжется с вами<br>в течение 15 минут
       </p>
-      <button class="btn btn-primary" onclick="closeModal();setTimeout(()=>location.reload(),300)">Закрыть</button>
+      <button class="btn btn-primary" onclick="closeModal()">Закрыть</button>
     </div>
   `;
 }
+
+// Escape tugmasi bilan yopish
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('modal');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    if (modal.classList.contains('active')) closeModal();
+    if (mobileMenu.classList.contains('active')) toggleMobile();
+  }
+});
 
 // ── Calculator ──
 const priceRange = document.getElementById('priceRange');
@@ -1212,11 +1286,29 @@ function calculate() {
   savingsTextEl.textContent = 'Вы экономите ≈ ' + Math.round(savings).toLocaleString('ru-RU') + ' ₽';
 }
 
-// ── Filter buttons ──
+// ── Filter buttons (haqiqiy filtratsiya) ──
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    
+    const filter = btn.dataset.filter;
+    const cars = document.querySelectorAll('.car-card');
+    
+    cars.forEach(card => {
+      if (filter === 'all') {
+        card.style.display = '';
+        setTimeout(() => card.classList.add('visible'), 50);
+      } else {
+        const categories = card.dataset.category || '';
+        if (categories.includes(filter)) {
+          card.style.display = '';
+          setTimeout(() => card.classList.add('visible'), 50);
+        } else {
+          card.style.display = 'none';
+        }
+      }
+    });
   });
 });
 
